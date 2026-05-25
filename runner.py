@@ -4,72 +4,90 @@ from icebreaker import Icebreaker
 class Runner:
 
     def __init__(self, handle: str, max_integrity: int, power: int, finesse: int):
-        self.handle = handle
+        self.__handle = handle
+        self.__max_integrity = max_integrity
+        self.__power = power
+        self.__finesse = finesse
+        self.__integrity = self.__max_integrity
+        self.__icebreaker = None
 
-        # TODO: controlla che max_integrity >= 1, correggi a 1 se necessario
-        self.max_integrity = max_integrity
-        if max_integrity < 1:
+        if not isinstance(self.__max_integrity, int):
+            print("Attenzione: max_integrity deve essere un intero. Corretto a 1.")
+            self.__max_integrity = 1
+        elif self.__max_integrity < 1:
             print("Attenzione: max_integrity deve essere >= 1. Corretto a 1.")
-            self.max_integrity = 1
-        self.integrity = self.max_integrity
+            self.__max_integrity = 1
 
-        # TODO: controlla che power sia in [1, 20], clampa se necessario
-        self.power = power
-        if power != max(1, min(20, power)):
+        self.__integrity = self.__max_integrity
+
+        if not isinstance(self.__power, int):
+            print("Attenzione: power deve essere un intero. Corretto a 1.")
+            self.__power = 1
+        elif self.__power != max(1, min(20, self.__power)):
             print("Attenzione: power fuori range. Corretto.")
-        self.power = max(1, min(20, power))
 
-        # TODO: controlla che finesse sia in [1, 20], clampa se necessario
-        self.finesse = finesse
-        if finesse != max(1, min(20, finesse)):
+        self.__power = max(1, min(20, self.__power))
+
+        if not isinstance(self.__finesse, int):
+            print("Attenzione: finesse deve essere un intero. Corretto a 1.")
+            self.__finesse = 1
+        elif self.__finesse != max(1, min(20, self.__finesse)):
             print("Attenzione: finesse fuori range. Corretto.")
-        self.finesse = max(1, min(20, finesse))
-        self.icebreaker = None           # nessun icebreaker all'inizio
+
+        self.__finesse = max(1, min(20, self.__finesse))
+
+    def get_handle(self):
+        return self.__handle
+
+    def get_integrity(self):
+        return self.__integrity
+
+    def get_power(self):
+        return self.__power
+
+    def get_finesse(self):
+        return self.__finesse
+
+    def get_max_integrity(self):
+        return self.__max_integrity
+
+    def get_icebreaker(self):
+        return self.__icebreaker
 
     def equip(self, icebreaker: Icebreaker) -> None:
-        # TODO: assegna l'icebreaker al runner (una riga)
-        self.icebreaker = icebreaker
+        self.__icebreaker = icebreaker
 
     def modifier(self, value: int) -> int:
-        # TODO: restituisci (value - 10) // 2  (una riga)
         return (value - 10) // 2
 
     def is_alive(self) -> bool:
-        # TODO: restituisci True se integrity > 0  (una riga)
-        return self.integrity > 0
+        return self.__integrity > 0
 
     def take_damage(self, amount: int) -> int:
-        # TODO: riduci integrity (mai sotto 0) e restituisci il danno effettivo
-        # Suggerimento: usa min() per clampare il danno a integrity disponibile
-        damage_taken = min(amount, self.integrity)
-        self.integrity -= damage_taken
+        if not isinstance(amount, int):
+            print("Attenzione: amount deve essere un intero.")
+            return 0
+        elif amount < 0:
+            print("Attenzione: amount deve essere >= 0.")
+            return 0
+
+        damage_taken = min(amount, self.__integrity)
+        self.__integrity -= damage_taken
         return damage_taken
 
     def attack(self, enemy: "Runner") -> int:
-        # TODO (passo 1): decidi il danno base
-        #   - se self.icebreaker è None → danno base = 1
-        #   - altrimenti → danno base = self.icebreaker.get_damage()
-        # TODO (passo 2): scegli il modificatore corretto
-        #   - se l'icebreaker è "fracter" → usa self.power
-        #   - se è "decoder" → usa self.finesse
-        #   - applicalo con self.modifier(...)
-        if self.icebreaker is None:
+        if self.__icebreaker is None:
             base_damage = 1
-            damage_modifier = 0  # nessun modificatore senza arma
+            damage_modifier = 0
         else:
-            base_damage = self.icebreaker.get_damage()
-            if self.icebreaker.type == "fracter":
-                damage_modifier = self.modifier(self.power)
+            base_damage = self.__icebreaker.get_damage()
+            if self.__icebreaker.get_type() == "fracter":
+                damage_modifier = self.modifier(self.__power)
             else:
-                damage_modifier = self.modifier(self.finesse)
+                damage_modifier = self.modifier(self.__finesse)
 
-
-        # TODO (passo 3): il danno totale non può scendere sotto 0
         total_damage = max(0, base_damage + damage_modifier)
-
-        # TODO (passo 4): chiama enemy.take_damage(...) e restituisci il risultato
         return enemy.take_damage(total_damage)
 
     def __str__(self) -> str:
-        # TODO: es. "armitage (Integrity: 32/50)"
-        return f"{self.handle} (Integrity: {self.integrity}/{self.max_integrity})"
+        return f"{self.__handle} (Integrity: {self.__integrity}/{self.__max_integrity})"
